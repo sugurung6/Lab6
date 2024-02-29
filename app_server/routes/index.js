@@ -1,25 +1,16 @@
-// Import necessary modules
-const express = require('express');
-const router = express.Router();
 
-// Import your controllers
-const blogController = require('../controllers/blogController');
+var express = require('express');
+var router = express.Router();
+var ctrlHome = require('../controllers/home');
+var ctrlBlogs = require('../controllers/blogs');
 
-// Define routes
-router.get('/', function(req, res) {
-    // Render the home page view
-    res.render('home', { title: 'Your Name Blog Site' });
-});
-
-router.get('/blogs', function(req, res) {
-    // Render the blog list page view
-    res.render('blogList', { title: 'Blog List' });
-});
-
-router.get('/blogs/add', function(req, res) {
-    // Render the blog add page view
-    res.render('blogAdd', { title: 'Blog Add' });
-});
-
-// Export the router
+/* Setup routes to pages */
+router.get('/', ctrlHome.home);
+router.get('/blog-list', ctrlBlogs.list);
+router.get('/blog-add', ctrlBlogs.add);
+router.post('/blog-add', ctrlBlogs.addPost);
+router.get('/blog-edit/:id', ctrlBlogs.edit);
+router.post('/blog-edit/:id', ctrlBlogs.editPost);
+router.get('/blog-delete/:id', ctrlBlogs.del);
+router.post('/blog-delete/:id', ctrlBlogs.deletePost);
 module.exports = router;

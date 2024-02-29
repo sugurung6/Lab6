@@ -1,4 +1,5 @@
-require('./db');
+// Importing the required module and assigning it to a variable
+const db = require('./db');
 
 var express = require('express');
 var path = require('path');
@@ -18,6 +19,8 @@ app.use('/', indexRouter);
 
 
 var app = express();
+
+app.set('port', process.env.PORT || 80);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'app_server', 'views'));
