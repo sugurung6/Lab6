@@ -1,24 +1,37 @@
 // Importing the required module and assigning it to a variable
-const db = require('./db');
-
+require('dotenv').config();
+var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var uglifyJs = require("uglify-js");
+var fs = require('fs');
+var passport = require('passport');
+require('./app_api/models/db');
+require('./app_api/config/passport');
 
 var routes = require('./app_server/routes/index');
-var users = require('./app_server/routes/users');
-
-// Import routes
-const indexRouter = require('./app_server/routes/index');
-
-// Use routes
-app.use('/', indexRouter);
+var routesApi = require('./app_api/routes/index');
 
 
 var app = express();
+app.locals.moment = require('moment');
+
+
+// Use routes
+// app.use('/', indexRouter);
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'app_client')));
+app.use(passport.initialize());
+app.use('/api', routesApi);
+
+// Added per Lab 5 - Angular
+app.use(function(req, res) {
+  res.sendFile(path.join(__dirname, 'app_client', 'index.html'));
+});
 
 app.set('port', process.env.PORT || 80);
 
@@ -35,9 +48,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
-app.use('/users', users);
+app.use('/api', routesApi);
 // Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
+//app.use(express.static(path.join(__dirname, 'public')));
 
 
 // catch 404 and forward to error handler

@@ -1,0 +1,9 @@
+<!-- app_client/views/addBlog.html -->
+<h1>Add Blog</h1>
+<form ng-submit="addBlog()">
+    <label>Title:</label>
+    <input type="text" ng-model="newBlog.title" required><br>
+    <label>Author:</label>
+    <input type="text" ng-model="newBlog.author" required><br>
+    <button type="submit">Add Blog</button>
+</form>

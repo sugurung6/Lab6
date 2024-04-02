@@ -1,0 +1,11 @@
+<!-- blogList.html -->
+<div ng-controller="BlogListController">
+    <h2>Blog List</h2>
+    <ul>
+        <li ng-repeat="blog in blogs">
+            {{ blog.title }} - {{ blog.author }}
+            <button ng-click="editBlog(blog._id)">Edit</button>
+            <button ng-click="deleteBlog(blog._id)">Delete</button>
+        </li>
+    </ul>
+</div>

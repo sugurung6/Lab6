@@ -1,15 +1,53 @@
-const mongoose = require('mongoose');
+var mongoose = require('mongoose');
+var gracefulShutdown;
 
-// Connect to MongoDB
-mongoose.connect('mongodb://blogs:<your_password>@localhost:27017/<your_database_name>', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false
-}).then(() => {
-    console.log('Connected to MongoDB');
-}).catch((err) => {
-    console.error('Error connecting to MongoDB:', err.message);
+var dbURI = 'DB_URL=mongodb://blogs:blogs@localhost/blogs';
+
+mongoose.connect(dbURI, { useNewUrlParser: true });
+
+// Monitor and report when database is connected
+mongoose.connection.on('connected', function () {
+    console.log('Mongoose connected to ' + dbURI);
 });
 
-module.exports = mongoose;
+// Monitor and report error connecting to database
+mongoose.connection.on('error', function (err) {
+    console.log('Mongoose connection error: ' + err);
+});
+
+// Monitor and report when database is disconnected
+mongoose.connection.on('disconnected', function () {
+    console.log('Mongoose disconnected');
+});
+
+// Closes (disconnects) from Mongoose DB upon shutdown    
+gracefulShutdown = function (msg, callback) {
+    mongoose.connection.close(function () {
+        console.log('Mongoose disconnected through ' + msg);
+        callback();
+    });
+};
+
+// For nodemon restarts
+process.once('SIGUSR2', function () {
+    gracefulShutdown('nodemon restart', function () {
+        process.kill(process.pid, 'SIGUSR2');
+    });
+});
+
+// For app termination
+process.on('SIGINT', function () {
+    gracefulShutdown('app termination', function () {
+        process.exit(0);
+    });
+});
+
+// For Heroku app termination
+process.on('SIGTERM', function () {
+    gracefulShutdown('Heroku app shutdown', function () {
+        process.exit(0);
+    });
+});
+
+// Load schemas & models
+require('./blogs');
