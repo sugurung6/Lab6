@@ -5,14 +5,14 @@
  */
 
 var app = require('../app');
-var debug = require('debug')('myapp:server');
+var debug = require('debug')('blogger:server');
 var http = require('http');
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '80');
+var port = normalizePort(process.env.PORT || '80'); // Change from 80 to 3000
 app.set('port', port);
 
 /**
