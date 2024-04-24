@@ -1,88 +1,74 @@
-// Importing the required module and assigning it to a variable
 require('dotenv').config();
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var uglifyJs = require("uglify-js");
-var fs = require('fs');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const mongoose = require('mongoose');
+const methodOverride = require('method-override');
 var passport = require('passport');
+
 require('./app_api/models/db');
 require('./app_api/config/passport');
 
-var routes = require('./app_server/routes/index');
-var routesApi = require('./app_api/routes/index');
+// Initialize the express application
+const app = express();
 
-
-var app = express();
-app.locals.moment = require('moment');
-
-
-// Use routes
-// app.use('/', indexRouter);
+// Middleware setup
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(methodOverride('_method'));
+app.use('/js', express.static(__dirname + '/node_modules/@uirouter/angularjs/release/'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'app_client')));
 app.use(passport.initialize());
-app.use('/api', routesApi);
 
-// Added per Lab 5 - Angular
-app.use(function(req, res) {
+// Import routes
+const indexRouter = require('./app_api/routes/index');
+
+// Use routes
+app.use(passport.initialize());
+app.use('/api', indexRouter);
+
+// view engine setup
+app.set('views', path.join(__dirname, 'app_api', 'views'));
+app.set('view engine', 'ejs');
+
+app.get('*', function(req, res) {
   res.sendFile(path.join(__dirname, 'app_client', 'index.html'));
 });
 
-app.set('port', process.env.PORT || 80);
-
-// view engine setup
-app.set('views', path.join(__dirname, 'app_server', 'views'));
-app.set('view engine', 'jade');
-
-// uncomment after placing your favicon in /public
-//app.use(favicon(__dirname + '/public/favicon.ico'));
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/', routes);
-app.use('/api', routesApi);
-// Serve static files from the 'public' directory
-//app.use(express.static(path.join(__dirname, 'public')));
-
-
-// catch 404 and forward to error handler
+// Catch 404 and forward to error handler
 app.use(function(req, res, next) {
-    var err = new Error('Not Found');
-    err.status = 404;
-    next(err);
+  next(createError(404));
 });
 
-// error handlers
+app.use((err, req, res, next) => {
+  // Log the error internally
+  logger.error(err); 
+  // Add this line to print the full error
+  console.error(err); 
+  // Return a JSON response with the error
+  res.status(err.status || 500).json({ error: err.message });
+});
 
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-    app.use(function(err, req, res, next) {
-        res.status(err.status || 500);
-        res.render('error', {
-            message: err.message,
-            error: err
-        });
-    });
-}
-
-// production error handler
-// no stacktraces leaked to user
+// Error handler
 app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.render('error', {
-        message: err.message,
-        error: {}
-    });
-});
+  // Set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
+  // Send the error as JSON
+  res.status(err.status || 500);
+  res.json({
+    error: {
+      status: err.status || 500,
+      message: err.message,
+      error: err
+    }
+  });
+});
 
 module.exports = app;
